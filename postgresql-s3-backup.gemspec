@@ -7,16 +7,24 @@ require 'postgresql/s3/backup/version'
 Gem::Specification.new do |s|
   s.name        = 'postgresql-s3-backup'
   s.version     = Postgresql::S3::Backup::VERSION
-  s.authors     = ['Piotr Kędziak']
+  s.authors     = ['Piotr Kędziak', 'Valiantsin Mikhaliuk']
   s.email       = ['piotr@kedziak.com']
-  s.homepage    = 'TODO'
-  s.summary     = 'TODO: Summary of Postgresql::S3::Backup.'
-  s.description = 'TODO: Description of Postgresql::S3::Backup.'
+  s.homepage    = 'https://github.com/piotr-kedziak/postgresql-S3-backup'
+  s.summary     = 'Do your Postgresql backups using AWS S3'
+  s.description = 'Create, send and restore your Postgresql bacukps using AWS S3'
   s.license     = 'MIT'
 
-  s.files = Dir['{app,config,db,lib}/**/*', 'MIT-LICENSE', 'Rakefile', 'README.md']
+  s.files       = `git ls-files -z`.split("\x0").reject do |f|
+    f.match(%r{^(test|spec|features)/})
+  end
 
-  s.add_dependency 'rails', '~> 5.1.4'
+  s.bindir = 'bin'
+  s.executables << 'create_s3_config'
+  s.require_paths = ['lib']
 
+  s.add_development_dependency 'bundler', '~> 1.15'
+  s.add_development_dependency 'rake', '~> 10.0'
   s.add_development_dependency 'pg'
+  s.add_dependency 'aws-sdk', '~> 2'
+  s.add_dependency 'zip'
 end
