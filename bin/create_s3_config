@@ -1,0 +1,63 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'fileutils'
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{File.basename($0)} [path]"
+
+  begin
+    opts.parse!(ARGV)
+  rescue OptionParser::ParseError => e
+    warn e.message
+    puts opts
+    exit 1
+  end
+end
+
+unless ARGV.empty?
+  if !File.exist?(ARGV.first)
+    abort "'#{ARGV.first}' does not exist."
+  elsif !File.directory?(ARGV.first)
+    abort "'#{ARGV.first}' is not a directory"
+  elsif abort 'Too many arguments; please specify application root directory.'
+  end
+end
+
+content = <<~FILE
+  development:
+    AWS_REGION:         ''
+    AWS_ACCESS_KEY_ID:  ''
+    AWS_SECRET_KEY:     ''
+    backup_bucket_name: ''
+
+  staging:
+    AWS_REGION:         ''
+    AWS_ACCESS_KEY_ID:  ''
+    AWS_SECRET_KEY:     ''
+    backup_bucket_name: ''
+
+  production:
+    AWS_REGION:         ''
+    AWS_ACCESS_KEY_ID:  ''
+    AWS_SECRET_KEY:     ''
+    backup_bucket_name: ''
+FILE
+
+file = 'config/s3.yml'
+base = ARGV.empty? ? '.' : ARGV.shift
+
+file = File.join(base, file)
+if File.exist? file
+  warn "[skip] '#{file}' already exists"
+elsif File.exist? file.downcase
+  warn "[skip] '#{file.downcase}' exists, which could conflict with '#{file}'"
+elsif !File.exist? File.dirname(file)
+  warn "[skip] directory '#{File.dirname(file)}' does not exist"
+else
+  puts "[add] writing '#{file}'"
+  File.open(file, 'w') { |f| f.write(content) }
+end
+
+puts '[done] please provide your S3 credentials to a config/s3.yml'
+puts "Then use a rake task 'rake db:s3_backup:create' or 'rake db:s3_backup:restore'"
