@@ -5,32 +5,29 @@ module S3
     class Connector
       def initialize
         @config = load_config
-        @s3 = Aws::S3::Resource.new(
+      end
+
+      def bucket
+        @bucket ||= Aws::S3::Resource.new(
           region:      region,
           credentials: credentials
-        )
-        @bucket = @s3.bucket(bucket_name)
+        ).bucket bucket_name
       end
 
       def send(file_path)
-        @bucket.create unless @bucket.exists?
+        bucket.create unless bucket.exists?
 
-        full_path = full_path(file_path, Date.current)
-        object = @bucket.object(full_path)
+        object = bucket.object full_path(file_path)
 
-        object.upload_file(file_path.to_s)
+        object.upload_file file_path.to_s
       end
 
       def retrieve_latest(file_path)
-        full_path = full_path(file_path, Date.current)
-        object = @bucket.object(full_path)
+        # get last file from bucket
+        object = bucket.objects.to_a.last
+        raise 'bucket empty' unless object.exists?
 
-        unless object.exists?
-          full_path = full_path(file_path, Date.yesterday)
-          object = @bucket.object(full_path)
-        end
-
-        object.get(response_target: file_path)
+        object.get response_target: file_path
       end
 
       private
@@ -43,16 +40,16 @@ module S3
         @config[:backup_bucket_name]
       end
 
-      def date_to_path(date)
-        date.strftime('%Y/%m/%d')
+      def date_to_path()
+        Time.zone.now.strftime '%F/%T'
       end
 
-      def full_path(file_path, date)
-        File.join(date_to_path(date), File.basename(file_path))
+      def full_path(file_path)
+        File.join date_to_path, File.basename(file_path)
       end
 
       def credentials
-        Aws::Credentials.new(@config[:AWS_ACCESS_KEY_ID], @config[:AWS_SECRET_KEY])
+        Aws::Credentials.new @config[:AWS_ACCESS_KEY_ID], @config[:AWS_SECRET_KEY]
       end
 
       def region
