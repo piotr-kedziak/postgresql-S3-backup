@@ -7,7 +7,7 @@ namespace :db do
       # dump the backup and zip it up
       puts "creating a local #{dump_file}..."
       # create directory if not exest
-      system "pg_dump -Fc --no-owner --dbname=#{db_name} | gzip -c > #{dump_file}"
+      system "sudo su - postgres -c \"pg_dump -Fc --no-owner --dbname=#{db_name}\" | gzip -c > #{dump_file}"
 
       puts "uploading #{dump_file} to Amazon S3..."
       s3 = S3::Backup::Connector.new
