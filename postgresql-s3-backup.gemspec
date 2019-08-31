@@ -25,6 +25,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'bundler', '~> 1.15'
   s.add_development_dependency 'rake', '~> 10.0'
   s.add_development_dependency 'pg'
-  s.add_dependency 'aws-sdk', '~> 2'
+  s.add_dependency 'aws-sdk', '~> 3'
   s.add_dependency 'zip'
 end
