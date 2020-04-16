@@ -31,6 +31,18 @@ namespace :db do
       File.delete dump_file
       puts 'finished'
     end
+
+    desc 'Remove old backups from AWS S3'
+    task remove: :environment do
+      s3 = S3::Backup::Connector.new
+      objects = s3.bucket.objects
+      # keep objects from last week
+      to_delete = objects.to_a.keep_if { |object| object.last_modified <= 1.week.ago }
+      # delete objects from the list
+      to_delete.each do |object|
+        object.delete
+      end
+    end
   end
 
   private
